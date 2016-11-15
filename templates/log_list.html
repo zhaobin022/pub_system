@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+
+    <!-- Data Tables -->
+    <link href="/static/css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="/static/css/animate.min.css" rel="stylesheet">
+    <link href="/static/css/style.min.css?v=4.1.0" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>操作日志 <small>分类，查找</small></h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+
+                    <table class="table table-striped table-bordered table-hover log_list">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户名</th>
+                                    <th>应用名</th>
+                                    <th>服务器名</th>
+                                    <th>操作类型</th>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户名</th>
+                                    <th>应用名</th>
+                                    <th>服务器名</th>
+                                    <th>操作类型</th>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </tfoot>
+                    </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/jquery.min.js?v=2.1.4"></script>
+    <script src="/static/js/bootstrap.min.js?v=3.3.6"></script>
+    <script src="/static/js/plugins/jeditable/jquery.jeditable.js"></script>
+    <script src="/static/js/plugins/dataTables/jquery.dataTables.js"></script>
+    <script src="/static/js/plugins/dataTables/dataTables.bootstrap.js"></script>
+    <script src="/static/js/content.min.js?v=1.0.0"></script>
+    <script>
+        $(document).ready(function () {
+            $('.log_list').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": "/get_log_list?app_id={{ app_id }}",
+                "columnDefs": [
+                    {
+                        "targets": [6],
+                        "data": "0",
+                        "render": function(data, type, full) {
+                            return "<a href='/log_detail?id=" + data + "&app_id={{ app_id }}'>详细</a>";
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
+
+</body>
+
+</html>

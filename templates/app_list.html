@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+
+    <!-- Data Tables -->
+    <link href="/static/css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="/static/css/animate.min.css" rel="stylesheet">
+    <link href="/static/css/style.min.css?v=4.1.0" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>应用 <small>分类，查找</small></h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+
+                        <table id="app_list" class="table table-striped table-bordered table-hover app_list">
+{#                            <thead>#}
+{#                                <tr>#}
+{#                                    <th>应用名字</th>#}
+{#                                    <th>摘要</th>#}
+{#                                    <th>服务器数量</th>#}
+{#                                    <th>操作</th>#}
+{#                                </tr>#}
+{#                            </thead>#}
+{#                            <tbody>#}
+{#                            {% for a in app_list %}#}
+{#                                <tr>#}
+{#                                    <td><a href="/server_list?app_id={{ a.id }}">{{ a.app_name }}</a></td>#}
+{#                                    <td>{{ a.summary | default_if_none:"" }}</td>#}
+{#                                    <td>{{ a.server__count }}</td>#}
+{#                                    <td>#}
+{#                                        <a href="/server_list?app_id={{ a.id }}" class="btn btn-sm btn-success">发版</a>#}
+{#                                        <a href="/log_list?app_id={{ a.id }}" class="btn btn-sm btn-success">查看日志</a>#}
+{#                                    </td>#}
+{#                                </tr>#}
+{#                            {% endfor %}#}
+{#                            </tbody>#}
+{#                            <tfoot>#}
+{#                                <tr>#}
+{#                                    <th>应用名字</th>#}
+{#                                    <th>摘要</th>#}
+{#                                    <th>服务器数量</th>#}
+{#                                    <th>操作</th>#}
+{#                                </tr>#}
+{#                            </tfoot>#}
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/jquery.min.js?v=2.1.4"></script>
+    <script src="/static/js/bootstrap.min.js?v=3.3.6"></script>
+    <script src="/static/js/plugins/jeditable/jquery.jeditable.js"></script>
+    <script src="/static/js/plugins/dataTables/jquery.dataTables.js"></script>
+    <script src="/static/js/plugins/dataTables/dataTables.bootstrap.js"></script>
+    <script src="/static/js/content.min.js?v=1.0.0"></script>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '/get_app_list',
+                type: 'get',
+                dataType: 'json',
+                success: function (data) {
+                    var dataSet = data;
+                    $.each(dataSet,function(n,value) {
+                        value[3] = '<a href="/server_list?app_id='+value[3]+'" class="btn btn-sm btn-success">发版</a>&nbsp;&nbsp;<a href="/log_list?app_id='+value[3]+'" class="btn btn-sm btn-success">查看日志</a>'
+                    });
+                    $("#app_list").dataTable({
+                        data: dataSet,
+                        columns: [
+                            { title: "应用名字" },
+                            { title: "摘要" },
+                            { title: "服务器数量" },
+                            { title: "操作" },
+                        ],
+                        "createdRow": function( row, data, dataIndex ) {
+                            $(row).children('td').eq(3).attr('style', 'text-align: center;')
+                        },
+                        "bAutoWidth":true,
+                    });
+                },
+            });
+        });
+    </script>
+
+</body>
+
+</html>

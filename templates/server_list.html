@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+
+    <!-- Data Tables -->
+{#    <link href="/static/css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">#}
+    <link href="/static/css/plugins/dataTables/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="/static/css/animate.min.css" rel="stylesheet">
+    <link href="/static/css/style.min.css?v=4.1.0" rel="stylesheet">
+    <!-- Sweet Alert -->
+    <link href="/static/css/plugins/sweetalert/sweetalert.css" rel="stylesheet">
+
+    <!-- Toastr -->
+    <link href="/static/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+    <div  class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+
+            <div id="result_container" class="col-sm-12" style="display: none">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>结果</h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content" style="position: relative">
+                        <pre id="result_content" style="overflow: auto;"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div id="bigdiv" class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>应用</h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content all-buttons">
+                        <button type="button" class="btn btn-sm btn-success init_app" onclick="click_all_to_one(this)">初始化应用目录</button>
+                        <button type="button" class="btn btn-sm btn-success gen_war_file" onclick="click_all_to_one(this)">生成WAR包</button>
+
+{#                        <button type="button" class="btn btn-sm btn-success" onclick="pub_war_to_server()">发布程序</button>#}
+
+{#                        <button type="button" class="btn btn-sm btn-success rollback_select_backup" onclick="click_all_to_one(this)">回滚选中的备份</button>#}
+{#                        <button type="button" class="btn btn-sm btn-success delete_selected_backup" onclick="click_all_to_one(this)">删除选中的备份</button>#}
+                        <ul>
+                            <li><h2>应用名:{{ app_obj.app_name }}</h2></li>
+                            <li><h2>应用启动脚本:{{ app_obj.start_script_path.script_path }}</h2></li>
+                            <li><h2>应用停止脚本:{{ app_obj.stop_script_path.script_path }}</h2></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>服务器列表 <small>分类，查找</small></h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <button type="button" class="btn btn-sm btn-success start_app" onclick="click_all_to_one(this)">启动应用</button>
+                        <button type="button" class="btn btn-sm btn-success stop_app" onclick="click_all_to_one(this)">停止应用</button>
+                        <button type="button" class="btn btn-sm btn-success reboot_app" onclick="click_all_to_one(this)">重启应用</button>
+                        <button type="button" class="btn btn-sm btn-success check_app" onclick="check_app()">检查应用状态</button>
+                        <button type="button" class="btn btn-sm btn-success" onclick="change_server_status('enable_all')">启用所有服务器</button>
+                        <button type="button" class="btn btn-sm btn-success" onclick="change_server_status('disable_all')">禁用所有服务器</button>
+                        <button type="button" class="btn btn-sm btn-success" onclick="change_server_status('reverse_all')">反选服务器状态</button>
+                        <table id="server_list" class="table table-striped table-bordered table-hover server_list">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>服务器名</th>
+                                    <th>IP地址</th>
+                                    <th>应用状态</th>
+                                    <th>当前版本</th>
+                                    <th>上次发版时间</th>
+                                    <th>服务器状态</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>服务器名</th>
+                                    <th>IP地址</th>
+                                    <th>应用状态</th>
+                                    <th>当前版本</th>
+                                    <th>上次发版时间</th>
+                                    <th>服务器状态</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>远程备份列表 <small>分类，查找</small></h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <button type="button" class="btn btn-sm btn-success rollback_select_backup" onclick="rollback_select_backup()">回滚选中的备份</button>
+                        <button type="button" class="btn btn-sm btn-success delete_selected_backup" onclick="delete_selected_backup()">删除选中的备份</button>
+                        <table id="file_list" class="table table-striped table-bordered table-hover file_list">
+{#                        <table class="display file_list" cellspacing="0" width="100%">#}
+                            <thead>
+                                <tr>
+                                    <th>文件名</th>
+                                    <th>权限</th>
+                                    <th>所属用户</th>
+                                    <th>所属组</th>
+                                    <th>文件大小</th>
+                                    <th>创建时间</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>文件名</th>
+                                    <th>权限</th>
+                                    <th>所属用户</th>
+                                    <th>所属组</th>
+                                    <th>文件大小</th>
+                                    <th>创建时间</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>本地备份列表 <small>分类，查找</small></h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <button type="button" class="btn btn-sm btn-success rollback_from_publish_server" onclick="rollback_from_publish_server()">从服务器端发布WAR包</button>
+                        <button type="button" class="btn btn-sm btn-success delete_local_backup" onclick="delete_local_backup()">从服务器端删除WAR包</button>
+                        <table id="local_file_list" class="table table-striped table-bordered table-hover local_file_list">
+{#                        <table class="display file_list" cellspacing="0" width="100%">#}
+                            <thead>
+                                <tr>
+                                    <th>文件名</th>
+                                    <th>权限</th>
+                                    <th>所属用户</th>
+                                    <th>所属组</th>
+                                    <th>文件大小</th>
+                                    <th>创建时间</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>文件名</th>
+                                    <th>权限</th>
+                                    <th>所属用户</th>
+                                    <th>所属组</th>
+                                    <th>文件大小</th>
+                                    <th>创建时间</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/jquery.min.js?v=2.1.4"></script>
+    <script src="/static/js/bootstrap.min.js?v=3.3.6"></script>
+    <script src="/static/js/plugins/jeditable/jquery.jeditable.js"></script>
+{#    <script src="/static/js/plugins/dataTables/jquery.dataTables.js"></script>#}
+    <script src="/static/js/plugins/dataTables/jquery.dataTables.min.js"></script>
+{#    <script src="/static/js/plugins/dataTables/dataTables.bootstrap.js"></script>#}
+    <script src="/static/js/content.min.js?v=1.0.0"></script>
+
+    <!-- Sweet Alert -->
+    <script src="/static/js/plugins/sweetalert/sweetalert.min.js"></script>
+
+    <!-- Toastr -->
+    <script src="/static/js/plugins/toastr/toastr.min.js"></script>
+
+    <script>
+        app_id = {{ app_obj.id }};
+        mywebsocket = null;
+        real_html = '';
+        toastr.options = {
+          "closeButton": false,
+          "debug": true,
+          "progressBar": false,
+          "positionClass": "toast-top-right",
+          "showDuration": "400",
+          "hideDuration": "1000",
+          "timeOut": "3000",
+          "extendedTimeOut": "1000",
+          "showEasing": "swing",
+          "hideEasing": "linear",
+          "showMethod": "fadeIn",
+          "hideMethod": "fadeOut"
+        };
+
+        function toastr_success_msg(title,msg) {
+            toastr.success(msg,title);
+        };
+
+        function toastr_error_msg(title,msg) {
+            toastr.error(msg,title);
+        };
+
+        function init_file_list_data_table() {
+            var file_dir_table = $('#file_list').DataTable( {
+                "ajax": "/get_remote_backup_list?app_id="+app_id,
+                "aaSorting": [
+                            [ 5, "desc" ]
+                        ],
+                "fnInitComplete": function() {
+                        this.fnAdjustColumnSizing(true);
+                },
+            } );
+            $('body').on('click', '.file_list tbody tr', function () {
+                if ( $(this).hasClass('selected') ) {
+                    $(this).removeClass('selected');
+                }
+                else {
+                    file_dir_table.$('tr.selected').removeClass('selected');
+                    $(this).addClass('selected');
+                }
+            });
+        };
+
+        function init_local_file_list_data_table() {
+            var local_file_dir_table = $('#local_file_list').DataTable( {
+                "ajax": "/get_local_backup_list?app_id="+app_id,
+                "aaSorting": [
+                            [ 5, "desc" ]
+                        ]
+            } );
+            $('body').on('click', '.local_file_list tbody tr', function () {
+                if ( $(this).hasClass('selected') ) {
+                    $(this).removeClass('selected');
+                }
+                else {
+                    local_file_dir_table.$('tr.selected').removeClass('selected');
+                    $(this).addClass('selected');
+                }
+            });
+        };
+
+        function init_server_list_data_table(){
+            var server_list_table = $('#server_list').DataTable( {
+                "ajax": "/get_server_list?app_id="+app_id,
+                "columns": [
+                    { "data": "id" },
+                    { "data": "server_name" },
+                    { "data": "ipaddr" },
+                    { "data": "app_status" },
+                    { "data": "current_version" },
+                    { "data": "publish_date" },
+                    { "data": "server_status" },
+                ]
+            } );
+        };
+
+        function reload_server_list_data_table(){
+            $('#server_list').DataTable().ajax.reload();
+        };
+
+        function websocket_onmessage_fun(e) {
+
+            var data = jQuery.parseJSON(e.data);
+            $("#result_content").css({"max-height": "280px"});
+            if ((data.status == false && data.msg != 'get_timeout') || data.stop == true) {
+                $('#wait_pic').remove();
+                if (data.stop == true) {
+                    console.log(data);
+                    if (data.action_type == 'rollback_select_backup'
+                            || data.action_type == 'start_app'
+                            || data.action_type == 'stop_app'
+                            || data.action_type == 'check_app'
+                            || data.action_type == 'reboot_app'
+                    ) {
+                        $('#server_list').DataTable().ajax.reload();
+                    } else if (data.action_type == 'delete_remote_backup') {
+                        $('#file_list').DataTable().ajax.reload();
+                    } else if (data.action_type == 'rollback_from_publish_server') {
+                        $('#server_list').DataTable().ajax.reload();
+                        $('#file_list').DataTable().ajax.reload();
+                    } else if (data.action_type == 'gen_war' || data.action_type == 'delete_local_backup') {
+                        $('#local_file_list').DataTable().ajax.reload();
+                    }
+                    ;
+                    if (data.hasOwnProperty("ret_status")) {
+                        if (data.ret_status == true) {
+                            toastr_success_msg("Successfull!", data.ret_msg);
+                        } else {
+                            toastr_error_msg("Error!", data.ret_msg);
+                        }
+                        ;
+                    }
+                    ;
+                    window.s.close();
+
+                }
+                ;
+            } else if (data.msg == 'get_timeout') {
+                    $(".wait_pic").remove();
+                     toastr_error_msg("Error!", "执行超时!");
+            } else {
+{#                    real_html += data.msg;#}
+                wait_pic = '<img id="wait_pic" class="wait_pic" src="/static/img/spinner.gif">';
+{#                    $("#result_content").html(temp);#}
+                $(".wait_pic").remove();
+                 $("#result_content").append(data.msg);
+                 $("#result_content").append(wait_pic);
+                $('#result_content').animate({
+                    scrollTop: $('#result_content')[0].scrollHeight
+                }, 0);
+
+            }
+            ;
+        };
+
+        $(document).ready(function () {
+            init_file_list_data_table();
+            init_server_list_data_table();
+            init_local_file_list_data_table();
+        });
+
+        function get_data_real(task_id) {
+
+            $.ajax({
+                url: '/get_ret',
+                type: 'get',
+                data: {
+                    app_id: app_id,
+                    task_id: task_id
+                },
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+					$("#result_content").css({"max-height":"280px"});
+{#                    if ( (data.status == false &&　data.msg == 'get_timeout') || data.stop == true) {#}
+                    if ( (data.msg == 'get_timeout') || data.stop == true) {
+                        $('#wait_pic').remove();
+                        if (data.stop == true) {
+                            console.log(data);
+                            if (data.action_type == 'rollback_select_backup'
+                                    || data.action_type == 'start_app'
+                                    || data.action_type == 'stop_app'
+                                    || data.action_type == 'check_app'
+                                    || data.action_type == 'reboot_app'
+                            ) {
+                                $('#server_list').DataTable().ajax.reload();
+                            } else if (data.action_type == 'delete_remote_backup'){
+                                 $('#file_list').DataTable().ajax.reload();
+                            } else if (data.action_type == 'rollback_from_publish_server'){
+                                $('#server_list').DataTable().ajax.reload();
+                                $('#file_list').DataTable().ajax.reload();
+                            } else if (data.action_type == 'gen_war' ||data.action_type == 'delete_local_backup') {
+                                $('#local_file_list').DataTable().ajax.reload();
+                            };
+                            if (data.hasOwnProperty("ret_status")){
+                                if (data.ret_status == true) {
+                                    toastr_success_msg("Successfull!",data.ret_msg);
+                                } else {
+                                    toastr_error_msg("Error!",data.ret_msg);
+                                };
+                            };
+                        } else if (data.msg == 'get_timeout'){
+                            toastr_error_msg("Error!",data.ret_msg);
+                        };
+                    } else {
+                        real_html += data.msg;
+                        temp = real_html+ '<img id="wait_pic" style="" src="/static/img/spinner.gif">';
+                        $("#result_content").html(temp);
+						$('#result_content').animate({
+							scrollTop: $('#result_content')[0].scrollHeight}, 0);
+                        get_data_real(task_id);
+					};
+                }
+            });
+        };
+
+        function init_app() {
+            init_result_win();
+            $.ajax({
+                url: '/init_app',
+                type: 'post',
+                data: {app_id: app_id},
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == true) {
+                        get_data_real(data.task_id)
+                    }
+                }
+            });
+        }
+
+        function rollback_select_backup(){
+
+            var selected_row = $('#file_list > tbody > tr.selected');
+            var file_name = $.trim(selected_row.children().eq(0).html());
+            if (file_name == null || file_name == '') {
+                swal("请选择要上线的文件!", "", "warning");
+                return;
+            };
+            var title = '您确定要上线当前文件吗?';
+            swal({
+                title: title,
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "提交",
+                cancelButtonText: "取消",
+                closeOnConfirm: true,
+                closeOnCancel: true
+            }, function () {
+                $.ajax({
+                    url: '/rollback_select_backup',
+                    type: 'post',
+                    data: {
+                        app_id: app_id,
+                        file_name: file_name
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.status) {
+                            init_result_win();
+                            get_data_real(data.task_id);
+                        } else {
+                        }
+                        ;
+                    }
+                });
+            });
+        };
+
+        function change_status(server_id){
+            $.ajax({
+                url: '/change_status',
+                type: 'post',
+                data: {
+                    app_id: app_id,
+                    server_id: server_id
+                },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status) {
+                        console.log(data.msg);
+                    } else {
+                        console.log(data.msg);
+                    }
+                    $('#server_list').DataTable().ajax.reload();
+                }
+            });
+        };
+
+        function change_server_status(operation_type){
+            $.ajax({
+                url: '/change_server_status',
+                type: 'post',
+                data: {
+                    app_id: app_id,
+                    operation_type: operation_type
+                },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status) {
+                        console.log(data.msg);
+                    } else {
+                        console.log(data.msg);
+                    }
+                    $('#server_list').DataTable().ajax.reload();
+                }
+            });
+        };
+
+        function rollback_from_publish_server(){
+            var selected_row = $("#local_file_list > tbody > tr.selected");
+            var file_name = $.trim(selected_row.children().eq(0).html());
+            if (file_name == null || file_name == '') {
+                swal("请选择要推送的文件!", "", "warning");
+                return;
+            };
+            var title = '您确定要推送当前文件吗?';
+            swal({
+                title: title,
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "提交",
+                cancelButtonText: "取消",
+                closeOnConfirm: true,
+                closeOnCancel: true
+            }, function () {
+
+                $.ajax({
+                    url: '/rollback_from_publish_server',
+                    type: 'post',
+                    data: {
+                        app_id: app_id,
+                        file_name: file_name
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.status) {
+                            init_result_win();
+                            get_data_real(data.task_id);
+                        } else {
+                        }
+                        ;
+                    }
+                });
+            });
+        };
+
+        function init_result_win() {
+            real_html = '';
+            $("#result_content").html('');
+            $("#result_container").css({"display":"block"});
+            $("#result_content").css({"min-height":"40px"});
+            $("html,body").animate({scrollTop:$("#result_container").offset().top},0)
+        };
+
+        function gen_war_file() {
+            $.ajax({
+                url: '/gen_war_file',
+                type: 'post',
+                data: {app_id: app_id},
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status) {
+                        var task_id = data.task_id;
+                        init_result_win()
+                        get_data_real(task_id);
+                    } else {
+
+                    };
+                }
+            });
+        };
+
+        function pub_war_to_server() {
+            $.ajax({
+                url: '/pub_war_to_server',
+                type: 'post',
+                data: {app_id: app_id},
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == true) {
+                        init_result_win();
+                        get_data_real(data.task_id);
+                    }
+                }
+            });
+        }
+
+        function delete_local_backup() {
+            var selected_row = $("#local_file_list > tbody > tr.selected");
+            var file_name = $.trim(selected_row.children().eq(0).html());
+            if (file_name == null || file_name == '') {
+                swal("请选择要删除的文件!", "", "warning");
+                return;
+            };
+            var title = '您确定要删除本地的备份吗?';
+            swal({
+                title: title,
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "提交",
+                cancelButtonText: "取消",
+                closeOnConfirm: true,
+                closeOnCancel: true
+            }, function () {
+                $.ajax({
+                    url: '/delete_local_backup',
+                    type: 'post',
+                    data: {
+                        app_id: app_id,
+                        file_name:file_name
+                        },
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.status) {
+                            init_result_win();
+                            get_data_real(data.task_id);
+                        } else {
+                        };
+                    }
+                })
+            });
+        };
+
+        function delete_selected_backup() {
+            var selected_row = $("#file_list > tbody > tr.selected");
+            var file_name = $.trim(selected_row.children().eq(0).html());
+            if (file_name == null || file_name == '') {
+                swal("请选择要删除的文件!", "", "warning");
+                return;
+            };
+            var title = '您确定要删除远程的备份吗?';
+            swal({
+                title: title,
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "提交",
+                cancelButtonText: "取消",
+                closeOnConfirm: true,
+                closeOnCancel: true
+            }, function () {
+                $.ajax({
+                    url: '/delete_remote_backup',
+                    type: 'post',
+                    data: {
+                        app_id: app_id,
+                        file_name:file_name
+                        },
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.status) {
+                            init_result_win();
+                            get_data_real(data.task_id);
+                        } else {
+                        };
+                    }
+                })
+            });
+        };
+
+        function reboot_app(){
+            $.ajax({
+                url: '/reboot_app',
+                type: 'post',
+                data: {app_id: app_id},
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == true) {
+                        init_result_win();
+                        console.log(data.task_id);
+                        console.log("task_id");
+                        get_data_real(data.task_id)
+                    }
+                }
+            });
+        };
+
+        function start_app(){
+            init_result_win()
+            $.ajax({
+                url: '/start_app',
+                type: 'post',
+                data: {app_id: app_id},
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == true) {
+                        init_result_win();
+                        get_data_real(data.task_id)
+                    }
+                }
+            });
+        };
+
+        function stop_app(){
+            $.ajax({
+                url: '/stop_app',
+                type: 'post',
+                data: {app_id: app_id},
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == true) {
+                        init_result_win();
+                        get_data_real(data.task_id)
+                    }
+                }
+            });
+        };
+
+        function check_app(){
+            init_result_win();
+            $.ajax({
+                url: '/check_app',
+                type: 'post',
+                data: {app_id: app_id},
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == true) {
+                        get_data_real(data.task_id)
+                    }
+                }
+            });
+        };
+
+        function click_all_to_one(arg) {
+            if (app_id == null || isNaN(parseFloat(app_id))) {
+                swal("应用id无效!", "", "warning");
+                return;
+            };
+            var title = '';
+            var f = '';
+            if ( $(arg).hasClass("gen_war_file") ) {
+                title = '您确定要生成war包吗?';
+                f = gen_war_file;
+            } else if ( $(arg).hasClass("reboot_app")){
+                title = '您确定要重启应用吗?';
+                f = reboot_app;
+            } else if ( $(arg).hasClass("start_app")) {
+                title = '您确定要启动应用吗?';
+                f = start_app;
+            } else if ( $(arg).hasClass("stop_app")) {
+                title = '您确定要停止应用吗?';
+                f = stop_app;
+            } else if ( $(arg).hasClass("init_app")) {
+                title = '您确定要初始化应用吗?';
+                f = init_app;
+            };
+
+            swal({
+                title: title,
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "提交",
+                cancelButtonText: "取消",
+                closeOnConfirm: true,
+                closeOnCancel: true
+            }, function () {
+                f();
+            });
+        };
+
+    </script>
+
+</body>
+
+</html>
